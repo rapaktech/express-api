@@ -1,21 +1,23 @@
 const express = require('express');
 const app = express();
+
+app.use(express.json());
+
 require('dotenv').config();
 const port = process.env.PORT;
 
+const connectToDB = require('./db');
+connectToDB().then(console.log('Database connection successful!')).catch(err => console.log(err));
 
+const bookRoutes = require('./bookRoutes');
+app.use(bookRoutes);
 
-app.get('/', (req, res) => {
-  res.status(200).send('Hello World!');
-});
+const userRoutes = require('./userRoutes');
+app.use(userRoutes);
 
 const routes = require('./routes');
 app.use(routes);
 
-app.use('**', (req, res) => {
-    res.status(404).send('Route not found.');
-});
-
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}.`);
+  console.log(`Server is live!`);
 });
