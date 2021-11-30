@@ -7,7 +7,7 @@ require('dotenv').config();
 const port = process.env.PORT;
 
 const connectToDB = require('./db');
-connectToDB().then(console.log('Database connection successful!')).catch(err => console.log(err));
+connectToDB().catch(err => console.log(err)).then(console.log('Database connection successful!'));
 
 const bookRoutes = require('./bookRoutes');
 app.use(bookRoutes);

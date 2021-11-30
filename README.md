@@ -12,8 +12,8 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
         {
             "username": "non-spaced string, unique",
-            "firstname": "non-spaced string, non-unique",
-            "lastname": "non-spaced string, non-unique"
+            "firstName": "non-spaced string, non-unique",
+            "lastName": "non-spaced string, non-unique"
         }
 
     ```
@@ -25,7 +25,6 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
     ``` JSON
 
         {
-            "username": "admin",
             "name": "Name of book (string)",
             "author": "Author of book (string)",
             "publisher": "Publisher of book (string)",
@@ -35,7 +34,7 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
     ```
 
-* To view full information and IDs on books available in the bookstore, send a GET request to localhost:8080/books, with a JSON object:
+* To view the full information and IDs of books available in the bookstore, send a GET request to localhost:8080/books, with a JSON object:
 
     ``` JSON
 
@@ -45,12 +44,13 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
     ```
 
+* To get a particular book from the library, send a GET request to localhost:8080/books/:bookId
+
 * To update a particular book available, send a PUT request to localhost:8080/books, with a JSON object:
 
     ``` JSON
 
         {
-            "username": "admin",
             "bookId": "ID of book in database, gotten from admin GET request to all books (string)",
             "name": "New Name of book if changed, else do not include property in JSON object (string)",
             "author": "New author of book if changed, else do not include property in JSON object (string)",
@@ -66,20 +66,30 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
     ``` JSON
 
         {
-            "username": "admin",
             "bookId": "ID of book in database, gotten from admin GET request to all books (string)"
         }
 
     ```
+
+* To view the full information and IDs of users registered to the bookstore, send a GET request to localhost:8080/users, with a JSON object:
+
+    ``` JSON
+
+        {
+            "username": "admin"
+        }
+
+* To get a particular registered user, send a GET request to localhost:8080/books/:userId
 
 * To update a particular user, send a PUT request to localhost:8080/users, with a JSON object:
 
     ``` JSON
 
         {
+            "userId": "ID of users in database, gotten from admin GET request to all users (string)",
             "username": "registered user's username (string)",
-            "newFirstName": "New first name of user if changed, else do not include property in JSON object (string)",
-            "newLastName": "New last name of user if changed, else do not include property in JSON object (string)"
+            "firstName": "New first name of user if changed, else do not include property in JSON object (string)",
+            "lastName": "New last name of user if changed, else do not include property in JSON object (string)"
         }
 
     ```
@@ -96,17 +106,9 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
 **Registered Users:**
 
-* To view all books available in the bookstore, send a GET request to localhost:8080/books, with a JSON object:
+* To view all books available in the bookstore, send a GET request to localhost:8080/books/:username
 
-    ``` JSON
-
-        {
-            "username": "registered user's username (string)"
-        }
-
-    ```
-
-* To lend a book, send a GET request to localhost:8080/books?borrow=yes, with a JSON object:
+* To lend a book, send a GET request to localhost:8080/borrow, with a JSON object:
 
     ``` JSON
 
@@ -118,17 +120,9 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
     ```
 
-* To view all the books you've borrowed, send a GET request to localhost:8080/users, with a JSON object:
+* To view all the books you've borrowed, send a GET request to localhost:8080/:username
 
-    ``` JSON
-
-        {
-            "username": "registered user's username (string)"
-        }
-
-    ```
-
-* To return a book, send a PUT request to localhost:8080/books?return=yes, with a JSON object:
+* To return a book, send a PUT request to localhost:8080/return
 
     ``` JSON
 
