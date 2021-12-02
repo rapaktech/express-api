@@ -1,30 +1,23 @@
 const express = require('express');
 const app = express();
-const port = 3000;
 
-let count = 0;
+app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.status(200).send('Hello World!');
-});
+require('dotenv').config();
+const port = process.env.PORT;
 
-app.get('/ping', (req, res) => {
-    count++;
-    if (count == 1) {
-        res.status(200).send(`There has been 1 ping since the server started.`);
-    } else if (count > 1) {
-        res.status(200).send(`There has been ${count} pings since the server started.`);
-    }
-});
+const connectToDB = require('./db');
+connectToDB().catch(err => console.log(err)).then(console.log('Database connection successful!'));
 
-app.get('/books', (req, res) => {
-    res.status(200).send('Hello World!');
-});
+const bookRoutes = require('./bookRoutes');
+app.use(bookRoutes);
 
-app.use('**', (req, res) => {
-    res.status(404).send('Route not found.');
-});
+const userRoutes = require('./userRoutes');
+app.use(userRoutes);
+
+const routes = require('./routes');
+app.use(routes);
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}.`);
+  console.log(`Server is live!`);
 });
