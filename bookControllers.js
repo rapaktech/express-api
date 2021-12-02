@@ -22,8 +22,10 @@ exports.getAllBooks = (req, res) => {
         return res.status(404).json({ message: 'Page not found!' });
     }
     try {
-        const books = Book.find({});
-        return res.status(200).json({ message: 'Here are the books in the library:', books });
+        Book.find({}, (err, foundBooks) => {
+            if (err) throw err;
+            else return res.status(200).json({ message: 'Here are the books in the library:', foundBooks });
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
@@ -33,8 +35,10 @@ exports.getAllBooks = (req, res) => {
 exports.getOneBook = (req, res) => {
     const bookId = req.params.bookId;
     try {
-        const book = Book.findById(bookId);
-        return res.status(200).json({ message: `Here's the book:`, book });
+        Book.findById(bookId, (err, foundBook) => {
+            if (err) throw err;
+            else return res.status(200).json({ message: `Here's the book:`, foundBook });
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
@@ -42,47 +46,12 @@ exports.getOneBook = (req, res) => {
 }
 
 exports.updateOneBook = (req, res) => {
-    if (!req.body.name || req.body.name == '') {
-        return res.status(400).json({ message: 'Name field cannot be empty' });
-        
-    }
-    
-    if (!req.body.author || req.body.author != '') {
-        return res.status(400).json({ message: 'Author field cannot be empty' });
-    }
-
-
     const bookId = req.body.bookId;
-    const bookName = req.body.name;
-    const bookAuthor = req.body.author;
-
     try {
-        const book = Book.findByIdAndUpdate(bookId, { ...req.body });
-
-        const users = User.find({});
-
-        users.map(user => {
-            return user.books.map(book => {
-                if (book._id == bookId) {
-                    book.name = bookName;
-                    book.author = bookAuthor;
-                    return book;
-                }
-            });
+        Book.findByIdAndUpdate(bookId, { ...req.body }, (err, book) => {
+            if (err) throw err;
+            else return res.status(200).json({ message: 'Book Updated Successfully', book });
         });
-
-        book.save(function (err) {
-            if (err) {
-                return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-            }
-        });
-
-        users.save(function (err) {
-            if (err) {
-                return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-            }
-        });
-        return res.status(200).json({ message: 'Book Updated Successfully', book });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
@@ -92,8 +61,10 @@ exports.updateOneBook = (req, res) => {
 exports.deleteOneBook = (req, res) => {
     const bookId = req.body.bookId;
     try {
-        const book = Book.findByIdAndDelete(bookId);
-        return res.status(200).json({ message: 'Book Deleted Successfully', book });
+        Book.findByIdAndDelete(bookId, (err, book) => {
+            if (err) throw err;
+            else return res.status(200).json({ message: 'Book Deleted Successfully', book });
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
@@ -102,77 +73,73 @@ exports.deleteOneBook = (req, res) => {
 
 exports.getBooks = (req, res) => {
     const username = req.params.username;
-    const user = User.findOne({ username: username });
-
-    if (!user) {
-        return res.status(404).json({ message: 'Page not found!' });
-    } else {
-        try {
-            const books = Book.find({});
-            books.map(book => {
-                book.id = null;
-                book.copies = null;
-                return book;
-            });
-            return res.status(200).json({ message: 'Here are the books in the library:', books });
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-        }
+    try {
+        User.findOne({ username: username }, (err, foundUser) => {
+            if (err) throw err;
+            else {
+                if (!foundUser) {
+                    return res.status(404).json({ message: 'Page not found!' });
+                } else {
+                    Book.find({}, (err, foundBooks) => {
+                        if (err) throw err;
+                        else return res.status(200).json({ message: 'Here are the books in the library:', foundBooks });
+                    });
+                }
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
     }
 }
 
 exports.borrowBook = (req, res) => {
     const username = req.body.username;
-    const user = User.findOne({ username: username });
-
-    if (!user) {
-        return res.status(404).json({ message: 'Page not found!' });
-    } else {
-        try {
-            const book = Book.findOne({ name: req.body.name, author: req.body.author });
-            user.books.push(book);
-
-            book.copies--;
-            book.save(function (err) {
-                if (err) {
-                    return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
+    const bookId = req.body.bookId;
+    try {
+        User.findOne({ username: username }, (err, foundUser) => {
+            if (err) throw err;
+            else {
+                if (!foundUser) {
+                    return res.status(404).json({ message: 'Page not found!' });
+                } else {
+                    const book = foundUser.books.find(({ _id }) => _id == bookId);
+                    if (book) return res.status(400).json({ message: `You've already borrowed this book before!` });
+                    else Book.findById(bookId, (err, foundBook) => {
+                        if (err) throw err;
+                        foundUser.books.push(foundBook);
+                        foundBook.copies--;
+                        foundBook.save(function (err, updatedBook) {
+                            if (err) throw err;
+                            foundUser.save(function (err, updatedUser) {
+                                if (err) throw err;
+                                else res.status(200).json({ message: 'Book borrowed successfully:', updatedBook, updatedUser });
+                            });
+                        });
+                    });
                 }
-            });
-
-            user.save(function (err) {
-                if (err) {
-                    return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-                }
-            });
-
-            book.id = null;
-            book.copies = null;
-            return res.status(200).json({ message: 'Book borrowed successfully:', book });
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-        }
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
     }
 }
 
 exports.getUserBooks = (req, res) => {
     try {
         const username = req.params.username;
-        const user = User.findOne({ username: username });
-
-        if (!user) {
-            return res.status(404).json({ message: 'Page not found!' });
-        }
-
-        const books = user.books;
-        books.map(book => {
-            book.id = null;
-            book.copies = null;
-            return book;
+        User.findOne({ username: username }, (err, foundUser) => {
+            if (err) throw err;
+            else {
+                if (!foundUser) {
+                    return res.status(404).json({ message: 'Page not found!' });
+                } else {
+                    const books = foundUser.books;
+                    return res.status(200).json({ message: `Here are the books you've borrowed from the library:`, books });
+                }
+            }
         });
-        
-        return res.status(200).json({ message: `Here are the books you've borrowed from the library:`, books });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
@@ -181,32 +148,33 @@ exports.getUserBooks = (req, res) => {
 
 exports.returnBook = (req, res) => {
     const username = req.body.username;
-    const user = User.findOne({ username: username });
-
-    if (!user) {
-        return res.status(404).json({ message: 'Page not found!' });
-    } else {
-        try {
-            const book = Book.findOne({ name: req.body.name, author: req.body.author });
-            book.copies++;
-            book.save(function (err) {
-                if (err) {
-                    return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
+    const bookId = req.body.bookId;
+    try {
+        User.findOne({ username: username }, (err, foundUser) => {
+            if (err) throw err;
+            else {
+                if (!foundUser) {
+                    return res.status(404).json({ message: 'Page not found!' });
+                } else {
+                    const book = foundUser.books.find(({ _id }) => _id == bookId);
+                    if (!book) return res.status(400).json({ message: `You've not borrowed this book before!` });
+                    else Book.findById(bookId, (err, foundBook) => {
+                        if (err) throw err;
+                        foundUser.books = foundUser.books.filter(book => book._id != bookId);
+                        foundBook.copies++;
+                        foundBook.save(function (err, updatedBook) {
+                            if (err) throw err;
+                            foundUser.save(function (err, updatedUser) {
+                                if (err) throw err;
+                                else res.status(200).json({ message: 'Book returned successfully:', updatedBook, updatedUser });
+                            });
+                        });
+                    });
                 }
-            });
-
-            user.save(function (err) {
-                if (err) {
-                    return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-                }
-            });
-
-            book.id = null;
-            book.copies = null;
-            return res.status(200).json({ message: 'Book returned successfully:', book });
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
-        }
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Some Error Occured. Please Try Again Later' });
     }
 }

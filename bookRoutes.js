@@ -14,11 +14,11 @@ router.put('/books', bookControllers.updateOneBook);
 
 router.delete('/books', bookControllers.deleteOneBook);
 
-router.get('/books/:username', bookControllers.getBooks);
+router.get('/user/:username', bookControllers.getBooks);
 
 router.get('/borrow', bookControllers.borrowBook);
 
-router.get('/:username', bookControllers.getUserBooks);
+router.get('/user/books/:username', bookControllers.getUserBooks);
 
 router.put('/return', bookControllers.returnBook);
 

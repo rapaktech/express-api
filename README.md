@@ -79,7 +79,9 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
             "username": "admin"
         }
 
-* To get a particular registered user, send a GET request to localhost:8080/books/:userId
+    ```
+
+* To get a particular registered user, send a GET request to localhost:8080/users/:userId
 
 * To update a particular user, send a PUT request to localhost:8080/users, with a JSON object:
 
@@ -99,14 +101,14 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
     ``` JSON
 
         {
-            "username": "registered user's username (string)"
+            "userId": "ID of users in database, gotten from admin GET request to all users (string)"
         }
 
     ```
 
 **Registered Users:**
 
-* To view all books available in the bookstore, send a GET request to localhost:8080/books/:username
+* To view all books available in the bookstore, send a GET request to localhost:8080/user/:username
 
 * To lend a book, send a GET request to localhost:8080/borrow, with a JSON object:
 
@@ -114,13 +116,12 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
         {
             "username": "registered user's username (string)",
-            "name": "Name of book (string)",
-            "author": "Author of book (string)"
+            "bookId": "ID of book in database, gotten from admin GET request to all books (string)"
         }
 
     ```
 
-* To view all the books you've borrowed, send a GET request to localhost:8080/:username
+* To view all the books you've borrowed, send a GET request to localhost:8080/user/books/:username
 
 * To return a book, send a PUT request to localhost:8080/return
 
@@ -128,8 +129,7 @@ A bookstore RESTful API built in Node.js using Express and Mongoose.
 
         {
             "username": "registered user's username (string)",
-            "name": "Name of book (string)",
-            "author": "Author of book (string)"
+            "bookId": "ID of book in database, gotten from admin GET request to all books (string)"
         }
 
     ```
